@@ -1,0 +1,177 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/2/ALU.hdl
+/**
+ * ALU (Arithmetic Logic Unit):
+ * Computes out = one of the following functions:
+ *                0, 1, -1,
+ *                x, y, !x, !y, -x, -y,
+ *                x + 1, y + 1, x - 1, y - 1,
+ *                x + y, x - y, y - x,
+ *                x & y, x | y
+ * on the 16-bit inputs x, y,
+ * according to the input bits zx, nx, zy, ny, f, no.
+ * In addition, computes the two output bits:
+ * if (out == 0) zr = 1, else zr = 0
+ * if (out < 0)  ng = 1, else ng = 0
+ */
+// Implementation: Manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) sets x = 0        // 16-bit constant
+// if (nx == 1) sets x = !x       // bitwise not
+// if (zy == 1) sets y = 0        // 16-bit constant
+// if (ny == 1) sets y = !y       // bitwise not
+// if (f == 1)  sets out = x + y  // integer 2's complement addition
+// if (f == 0)  sets out = x & y  // bitwise and
+// if (no == 1) sets out = !out   // bitwise not
+
+CHIP ALU32 {
+    IN  
+        x1[16], y1[16], x2[16] , y2[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute (out = x + y) or (out = x & y)?
+        no; // negate the out output?
+    OUT 
+        out1[16],
+        out2[16], // 16-bit output
+        zr,      // if (out == 0) equals 1, else 0
+        ng,
+        overflow;      // if (out < 0)  equals 1, else 0
+
+    PARTS:
+
+    //ALU SUPERIOR
+
+        //zxRes
+
+        Mux16(a=x1 , b= false, sel=zx , out= zxRes);
+
+        
+        //nxRes
+
+        Not16(in = zxRes , out = notX);
+
+        Mux16(a=zxRes , b= notX , sel = nx , out = nxRes);
+
+        
+
+        //zyRes
+
+        Mux16(a=y1 , b= false, sel=zy , out= zyRes);
+
+        
+
+        //nzRes
+
+        Not16(in = zyRes , out = notY);
+
+        Mux16(a=zyRes , b= notY , sel = ny , out = nyRes);
+
+        
+
+        //f
+
+        And16(a= nxRes, b= nyRes, out= compare );
+
+        //Add16 con carry
+        FullAdder16(a = nxRes , b = nyRes, c = false , out = addX1Y1 , carryFinal = c15);
+
+        Mux16(a= compare, b= addX1Y1, sel= f, out= fRes );
+
+        
+
+        //no
+
+        Not16(in= fRes, out= notFres );
+
+        Mux16(a= fRes, b= notFres, sel= no, out= out1 , out[0..7] = resLow , out[8..15] = resHigh);
+
+
+        //zr
+
+        Or8Way(in=resLow , out= wayLow);
+
+        Or8Way(in=resHigh , out= wayHigh);
+
+        Or(a = wayLow , b = wayHigh , out = or);
+
+        Not(in = or , out = zrX1Y1);
+    
+    //ALU INFERIOR
+
+        //zxRes
+
+        Mux16(a=x2 , b= false, sel=zx , out= IzxRes);
+
+        
+
+        //nxRes
+
+        Not16(in = IzxRes , out = InotX);
+
+        Mux16(a=IzxRes , b= InotX , sel = nx , out = InxRes);
+
+        
+
+        //zyRes
+
+        Mux16(a=y2 , b= false, sel=zy , out= IzyRes);
+
+        
+
+        //nzRes
+
+        Not16(in = IzyRes , out = InotY);
+
+        Mux16(a= IzyRes , b= InotY , sel = ny , out = InyRes);
+
+        
+
+        //f
+
+        And16(a= InxRes, b= InyRes, out= Icompare );
+
+        //Add16 modificado
+        FullAdder16(a = InxRes , b = InyRes, c = c15 , out = addX2Y2 , carryFinal = overflow); 
+
+
+        Mux16(a= Icompare, b= addX2Y2, sel= f, out= IfRes );
+
+        
+
+        //no
+
+        Not16(in= IfRes, out= InotFres );
+
+        Mux16(a= IfRes, b= InotFres, sel= no, out= out2 , out[15] = ng, out[0..7] = IresLow , out[8..15] = IresHigh);
+
+        
+        //zr
+
+        Or8Way(in=IresLow , out= IwayLow);
+
+        Or8Way(in=IresHigh , out= IwayHigh);
+
+        Or(a = IwayLow , b = IwayHigh , out = Ior);
+
+        Not(in = Ior , out = zrX2Y2);
+
+    //ZR TOTAL
+
+        And(a = zrX1Y1 , b = zrX2Y2 , out = zr); 
+
+    
+
+
+        
+    
+
+
+
+
+    
+}
