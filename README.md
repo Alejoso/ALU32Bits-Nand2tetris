@@ -7,8 +7,8 @@ Implementación de una **ALU de 32 bits** desarrollada en lenguaje **HDL** y eje
 ## 🖥️ Entorno de desarrollo
 
 - **Sistemas operativos:** 
-* Fedora Workstation 42
-* Manjaro Linux 25.0.7
+   * Fedora Workstation 42
+   * Manjaro Linux 25.0.7
 
 - **Software:** [Nand2Tetris](https://www.nand2tetris.org/)  
 
