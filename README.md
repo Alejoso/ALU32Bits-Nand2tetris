@@ -24,6 +24,8 @@ Implementación de una **ALU de 32 bits** desarrollada en lenguaje **HDL** y eje
    ```
 2. Dentro del simulador, cargar el chip ALU32 ubicado en la carpeta `proyecto/2`
 
+---
+
 ## 📋 Descripción detallada del diseño 
 Nuestra solución a la problemática planteada consiste en utilizar dos ALUs de 16 bits con el
 método ADD16 modificado. Cada ALU contará con una entrada adicional a las habituales: el
